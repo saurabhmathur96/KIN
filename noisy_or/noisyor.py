@@ -10,7 +10,6 @@ def sgm(x): return expit(x)
 def sgm_grad(x): return sgm(x)*(1-sgm(x))
 
 
-
 class NoisyOr:
   def __init__(self, w, b, q, ql):
     self.w = w
@@ -71,8 +70,7 @@ class NoisyOr:
       second = p0/(px*q[j] + 1 - px + E)
       third = px
       grad_q[j] = np.sum(first*second*third*q_grad[j], axis=0)
-    
-    
+
     grad_w = np.zeros(n)
     grad_b = np.zeros(n)
 
@@ -100,6 +98,7 @@ class NoisyOr:
     
     res = minimize(f, self.params, jac=g, method='L-BFGS-B')
     self.unpack(res.x)
+
 
 class MonotonicNoisyOr(NoisyOr):
   def __init__(self, w, b, q, ql, constraints, lamda = 1, eps = 0.01):
@@ -136,22 +135,21 @@ class MonotonicNoisyOr(NoisyOr):
       for a, b in ( (a, b) for a, b in product(v, v) if a > b):
         delta = self.delta(j, a, b)
         condition = (delta > 0)
-        P += condition*delta**2 # |delta|
+        P += condition*delta**2 # I[delta > 0]delta^2
     return P
   
   def grad(self, X, y):
-    # P = \sum condition 2*log (delta_i)
-    # grad P = \sum condition (2/delta_i) grad delta_i
+    # P = \sum I[delta_i > 0]delta_i^2
+    # grad P = \sum 2 I[delta > 0] delta_i grad_delta_i
     grad = super().grad(X, y)
     n = len(self.q)
     for j in range(n):
       if self.constraints[j] == 0:
         continue
-      
-      
+
       v = np.unique(X[:, j])
       for a, b in ( (a, b) for a, b in product(v, v) if a > b):
-        if self.constraints[j]==0: continue
+        if self.constraints[j] == 0: continue
         
         dw, db = self.delta_grad(j, a, b)
         delta = self.delta(j, a, b)
@@ -166,7 +164,6 @@ class MonotonicNoisyOr(NoisyOr):
 
     def g(x):
       self.unpack(x)
-      # print (-self.grad(X, y))
       return -self.grad(X, y)
 
     def f(x):

@@ -2,7 +2,8 @@ import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
-from noisyor import NoisyOr, MonotonicNoisyOr
+from .noisyor import NoisyOr, MonotonicNoisyOr
+
 
 class NoisyOrClassifier(BaseEstimator, ClassifierMixin):
 
@@ -58,6 +59,7 @@ class NoisyOrClassifier(BaseEstimator, ClassifierMixin):
         p = self.predict_proba(X)
         return np.array(p[:, 1] > 0.5, dtype = int)
 
+
 class MonotonicNoisyOrClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(self, constraints, lambda_, epsilon):
@@ -101,8 +103,7 @@ class MonotonicNoisyOrClassifier(BaseEstimator, ClassifierMixin):
         p = np.zeros((len(p), 2))
         p[:, 1] = p1 
         p[:, 0] = 1-p1
-        return p 
-        
+        return p
 
     def predict(self, X):
 
@@ -114,7 +115,6 @@ class MonotonicNoisyOrClassifier(BaseEstimator, ClassifierMixin):
         
         p = self.predict_proba(X)
         return np.array(p[:, 1] > 0.5, dtype = int)
-    
 
     @property
     def penalty(self):
