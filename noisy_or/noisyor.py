@@ -127,11 +127,12 @@ class MonotonicNoisyOr(NoisyOr):
     else:
       return 0, 0
 
-  def penalty(self, X):
+  @property
+  def penalty(self):
     P = 0
     n = len(self.q)
     for j in range(n):
-      v = np.unique(X[:, j])
+      v = self.V[j]
       for a, b in ( (a, b) for a, b in product(v, v) if a > b):
         delta = self.delta(j, a, b)
         condition = (delta > 0)
@@ -161,7 +162,11 @@ class MonotonicNoisyOr(NoisyOr):
     return grad
   
   def fit(self, X, y):
-
+    n = len(self.q)
+    V = []
+    for j in range(n):
+      V.append(np.unique(X[:, j]))
+    self.V = V
     def g(x):
       self.unpack(x)
       return -self.grad(X, y)
@@ -169,7 +174,7 @@ class MonotonicNoisyOr(NoisyOr):
     def f(x):
       self.unpack(x)
       
-      return -self.loglik(X, y) + self.lamda*self.penalty(X)
+      return -self.loglik(X, y) + self.lamda*self.penalty
     
     res = minimize(f, self.params, jac=g, method='L-BFGS-B')
     self.unpack(res.x)

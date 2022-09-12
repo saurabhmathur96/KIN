@@ -14,7 +14,7 @@ class NoisyOrClassifier(BaseEstimator, ClassifierMixin):
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
-        self.classes_ = unique_labels(y)
+        self.classes_ = list(unique_labels(y))
         assert self.classes_ == [0, 1]
         
         self.X_ = X
@@ -40,12 +40,9 @@ class NoisyOrClassifier(BaseEstimator, ClassifierMixin):
         # Input validation
         X = check_array(X)
         
-        p1 = self._model.predict_proba(X)
+        return self._model.P(X)
 
-        p = np.zeros((len(p), 2))
-        p[:, 1] = p1 
-        p[:, 0] = 1-p1
-        return p 
+
         
 
     def predict(self, X):
@@ -72,7 +69,7 @@ class MonotonicNoisyOrClassifier(BaseEstimator, ClassifierMixin):
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
-        self.classes_ = unique_labels(y)
+        self.classes_ = list(unique_labels(y))
         assert self.classes_ == [0, 1]
         
         self.X_ = X
@@ -98,12 +95,8 @@ class MonotonicNoisyOrClassifier(BaseEstimator, ClassifierMixin):
         # Input validation
         X = check_array(X)
         
-        p1 = self._model.predict_proba(X)
+        return self._model.P(X)
 
-        p = np.zeros((len(p), 2))
-        p[:, 1] = p1 
-        p[:, 0] = 1-p1
-        return p
 
     def predict(self, X):
 
@@ -112,7 +105,7 @@ class MonotonicNoisyOrClassifier(BaseEstimator, ClassifierMixin):
 
         # Input validation
         X = check_array(X)
-        
+
         p = self.predict_proba(X)
         return np.array(p[:, 1] > 0.5, dtype = int)
 
